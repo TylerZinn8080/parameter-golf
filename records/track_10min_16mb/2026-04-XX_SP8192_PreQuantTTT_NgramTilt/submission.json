@@ -1,0 +1,10 @@
+{
+  "name": "SP8192 + PreQuantTTT + NgramTilt (merged)",
+  "val_bpb": null,
+  "bytes_total": null,
+  "blurb": "Standalone merged train_gpt.py with SP8192 defaults, depth recurrence, SDClip+GPTQ (incl embeddings), optional pre-quant TTT, and eval-time n-gram tilt.",
+  "author": "",
+  "github_id": "",
+  "date": "2026-04-XX"
+}
+
