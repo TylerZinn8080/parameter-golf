@@ -36,7 +36,7 @@ except Exception:
 _COMPRESSOR = "lzma"
 
 try:
-    from flash_attn_interface import flash_attn_func as flash_attn_3_func  # type: ignore
+    from flash_attn import flash_attn_func as flash_attn_3_func  # type: ignore
 except Exception:
     flash_attn_3_func = None
 
