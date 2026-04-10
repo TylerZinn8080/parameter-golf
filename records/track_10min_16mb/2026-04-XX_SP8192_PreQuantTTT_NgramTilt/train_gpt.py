@@ -453,6 +453,12 @@ class FlashSelfAttention(nn.Module):
             ve = self.ve(tok_ids).to(dtype=v.dtype)
             v = v + self.ve_up(ve).view(b, s, self.n_kv_heads, self.head_dim)
 
+        # GQA: repeat KV along the head axis so K/V match Q head count (manual matmul + flash-attn).
+        if self.n_kv_heads != self.n_heads:
+            rep = self.n_heads // self.n_kv_heads
+            k = k.repeat_interleave(rep, dim=2)
+            v = v.repeat_interleave(rep, dim=2)
+
         if flash_attn_3_func is None:
             # fallback (slow): standard attention
             q2 = q.transpose(1, 2)  # [b,h,s,d]
@@ -465,11 +471,6 @@ class FlashSelfAttention(nn.Module):
             y = torch.matmul(p, v2).transpose(1, 2).contiguous().view(b, s, self.d_model)
         else:
             # flash-attn expects [b,s,h,d] for q,k,v; handles causal mask
-            # expand kv heads to q heads by repeat in head dimension
-            if self.n_kv_heads != self.n_heads:
-                rep = self.n_heads // self.n_kv_heads
-                k = k.repeat_interleave(rep, dim=2)
-                v = v.repeat_interleave(rep, dim=2)
             y = flash_attn_3_func(q, k, v, dropout_p=0.0, causal=True)
             y = y.reshape(b, s, self.d_model)
         return self.out_proj(y)
